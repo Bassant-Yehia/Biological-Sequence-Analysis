@@ -1,0 +1,535 @@
+// C++ program for building suffix array of a given text
+#include <iostream>
+#include <cstring>
+#include<cstdio>
+#include<cstdlib>
+//#include <chrono>
+#include <algorithm>
+using namespace std;
+#define DIR "D:\\studying\\3rd year-2nd semester\\Bio seq analysis\\Assignments\\"
+struct suffArrayStruct
+{
+    // Struct contains data of the suffix array after read it from file
+    char *Leters; //variable to point to leters in the array
+    int order; //integer variable contains the indexes of the array that help me in ordering the suffix
+};
+/*bool intial_comparason(struct suffArrayStruct  s1, struct suffArrayStruct  s2)
+{  //to creating the initial order of suffix to get  for example : "ant" :-> 0,1,2 t this usual order after calling this func in sort func
+	if (strcmp(s1.Leters, s2.Leters) !=0)
+	 return true; //so the two leters not equal after that sort func will be applied and the array will be sorted
+    else
+        return false; //so the two leters are equal after that sort func willnot be applied
+*/
+int x;
+// A comparison function used by sort() to compare two suffixes
+bool final_comparason(struct suffArrayStruct  s1, struct suffArrayStruct  s2)
+{
+    //to creating the order of suffix to get sorted for suffix array  after calling this func in sort func
+    x=strcmp(s1.Leters, s2.Leters); //string the return of strcmp func in x variable
+    if(x < 0) // comparing leter1 with leter2
+        return true; //means  ther are not equal
+    else
+        return false; //they are equal
+        }
+
+
+int *CreateSuffix_Naive(char *Input, int Size)
+{
+    //func that take the string through char of array and the size to creat suffix then get suff arrY
+    struct suffArrayStruct  suffixes[Size]; //saving suffix in arr of struct type
+// and maintain their old indexes while sorting
+    int x=0;
+    while ( x < Size)
+    {
+        suffixes[x].order= x;
+        suffixes[x].Leters = (Input+x); //shifting
+        x++;
+    }
+cout<<endl<<endl<<"x ="<<x<<endl;
+
+
+    //sort(suffixes, suffixes+n, intial_comparason);
+    sort(suffixes, suffixes+Size, final_comparason); // Sort the suffixes using the comparison function
+
+
+    // Store indexes of all sorted suffixes in the suffix array
+    int *suffixArr = new int[Size];
+    int i = 0;
+    while( i < Size )
+    {
+        suffixArr[i] = suffixes[i].order;
+        i++;
+    }
+    cout<<endl<<endl<<"i ="<<i<<endl;
+
+    // Return the suffix array
+    return suffixArr;
+
+    delete []suffixArr;
+}
+
+char *CreateSuffix_char(char *Input, int Size)
+{
+    //func that take the string through char of array and the size to creat suffix then get suff arrY
+    struct suffArrayStruct  suffixes[Size]; //saving suffix in arr of struct type
+// and maintain their old indexes while sorting
+    int x=0;
+    while ( x < Size)
+    {
+        suffixes[x].order= x; //x describe current index
+        suffixes[x].Leters = (Input+x); // for shifting the given char by x and save the old indexes
+        x++;
+    }
+cout<<endl<<endl<<"x ="<<x<<endl;
+
+
+    //sort(suffixes, suffixes+n, intial_comparason);
+    sort(suffixes, suffixes+Size, final_comparason); // Sort the suffixes using the comparison function
+
+
+    // Store indexes of all sorted suffixes in the suffix array
+    /* char *suffixArr_char [Size];
+       int i = 0;
+       while( i < Size )
+       {
+           suffixArr_char[i] = suffixes[i].Leters;
+           i++;
+       }
+
+       // Return the suffix array
+       return *suffixArr_char;*/
+
+}
+void Read()
+{
+
+    int Count=0;
+    char Buffer[20000];
+    FILE* Read_file=fopen(DIR "genome.fasta", "r");
+    int r=0;
+    while(r<10000)
+// Print the first 10000 reads
+    {
+
+        if(r==0)
+
+        {
+            Buffer[0]=0;
+            fscanf(Read_file, "%[^\n\r] ",Buffer);// Ignore this line
+        }
+
+        fscanf(Read_file, "%c ",&Buffer[r]); //read chars
+        r+=1;
+
+        // Ignore this line
+
+    }
+cout<<endl<<endl<<"   count of genes is : "<<r<<endl;
+    cout<<endl<<"           *The 1st 10,000 chars by naive is*     "<<endl<<"           ---------------------------------      "<<endl<<Buffer<<endl;
+    //to print char of array that contain 10000 chars
+
+    cout<<endl<<endl<<endl<<endl;
+    fclose(Read_file);
+}
+
+// A utility function to print an array of given size
+void Output_ordring(int arr[], int n)
+{
+	for (int i = 0; i < n; i++)
+		cout << arr[i] << " ";
+	cout << endl;
+}
+
+
+int* GetSuffix_Naive()
+{
+
+    Read(); //read file and calculte num of genes that it read
+    char Buffer[10000];
+    int *Suffix_Array = CreateSuffix_Naive(Buffer,10000); //fun return integer of array and the size to creat suffix then get suff arrY
+    //then return numbers of suffix in Suffix_Array
+    Output_ordring(Suffix_Array, 10000); //for printing suffix_array[i]
+
+
+
+    delete[] Buffer;//delete dynamic array
+return Suffix_Array;}
+
+
+struct suffix //struct for suffix array to be able to access indexes and order through it
+{
+	int index; // to save index
+	int order[2]; // to save orders for pairs
+};
+void Menu()
+{
+    cout<<"\t\t\t\t\t |---------------------------------| \n";
+    cout<<"\t\t\t\t\t |           Suffix Array          | \n";
+    cout<<"\t\t\t\t\t |---------------------------------| \n";
+    cout<<"\n==========""Menu""==========\n";
+    cout<<"1.Naive\n"<<"2.Prefix for 10,000\n"<<"3.Prefix for whole genome\n"<<"4.Some test cases\n"<<"5.Exit";
+    cout<<"\n=========================================================================\n";
+}
+
+
+
+
+// A comparison function used by sort() to compare two suffixes
+// Compares two pairs, returns 1 if first pair is smaller
+int Compare(suffix s1, suffix s2)
+{
+    if(s1.order[0] == s2.order[0])
+    {
+        if(s1.order[1] < s2.order[1])
+            return 1 ;
+        else
+            return 0 ;
+    }
+    else if (s1.order[0] < s2.order[0])
+        return 1 ;
+    else
+        return 0;
+}
+
+// This is the main function that takes a string 'txt' of size n as an
+// argument, builds and return the suffix array for the given string
+int *CreateSuffix(char *txt, int n)
+{
+	// A structure to store suffixes and their indexes
+	struct suffix suffixes[n];
+
+	// Store suffixes and their indexes in an array of structures.
+	// The structure is needed to sort the suffixes alphabatically
+	// and maintain their old indexes while sorting
+	int i = 0;
+	while (i < n)
+	{
+		suffixes[i].index = i;
+		suffixes[i].order[0] = txt[i] - 97;
+		if ((i+1) < n)
+            suffixes[i].order[1] =(txt[i + 1] - 97);
+            else
+            suffixes[i].order[1] = -1;
+            i++;
+	}
+
+	// Sort the suffixes using the comparison function
+	// defined above.
+	sort(suffixes, suffixes+n, Compare);
+
+	// At this point, all suffixes are sorted according to first
+	// 2 characters. Let us sort suffixes according to first 4
+	// characters, then first 8 and so on
+	int index[n]; // This array is needed to get the index in suffixes[]
+				// from original index. This mapping is needed to get
+				// next suffix.
+	for (int Map = 4; Map < 2*n; Map = Map*2)
+	{
+		// Assigning rank and index values to first suffix
+		int order = 0;
+		int old_order = suffixes[0].order[0];
+		suffixes[0].order[0] =order;
+		index[suffixes[0].index] = 0;
+
+		// Assigning rank to suffixes
+		int i = 1;
+		while( i < n)
+		{
+			// If first rank and next ranks are same as that of previous
+			// suffix in array, assign the same new rank to this suffix
+			if (suffixes[i].order[0] == old_order &&suffixes[i].order[1] == suffixes[i-1].order[1])
+			{
+				old_order= suffixes[i].order[0];
+				suffixes[i].order[0] = order;
+			}
+			else // Otherwise increment rank and assign
+			{
+				old_order = suffixes[i].order[0];
+				suffixes[i].order[0] = ++order;
+			}
+			index[suffixes[i].index] = i;
+			i++;
+		}
+
+		// Assign next rank to every suffix
+		for (int i = 0; i < n; i++)
+		{
+			int next_index = suffixes[i].index + Map/2;
+			if (next_index < n)
+              suffixes[i].order[1] =suffixes[index[next_index]].order[0];
+                else
+                suffixes[i].order[1] = -1;
+		}
+
+		// Sort the suffixes according to first k characters
+		sort(suffixes, suffixes+n, Compare);
+	}
+
+	// Store indexes of all sorted suffixes in the suffix array
+	int *suffixArr = new int[n];
+	for (int i = 0; i < n; i++)
+		suffixArr[i] = suffixes[i].index;
+
+	// Return the suffix array
+	return suffixArr;
+}
+
+
+
+
+void Read2()
+{
+
+    int Count=0;
+    char Buffer2[200000];
+    FILE* Read_file=fopen(DIR "genome.fasta", "r");
+    int i=0;
+    while(i<100000)
+// Print the first 10000 reads
+    {
+
+        if(i==0)
+
+        {
+            Buffer2[0]=0;
+            fscanf(Read_file, "%[^\n\r] ",Buffer2);// Ignore this line
+        }
+
+        fscanf(Read_file, "%c ",&Buffer2[i]); //read chars
+        i+=1;
+        Count+=1;
+        // Ignore this line
+
+    }
+
+    cout<<endl<<"           *The 1st 100,000 genes (chars) by prefix doubling is*     "<<endl<<"           ---------------------------------      "<<endl<<Buffer2<<endl;
+    //to print char of array that contain 10000 chars
+
+    cout<<endl<<"   count of genes is : "<<Count<<endl<<endl<<endl;
+    fclose(Read_file);
+}
+
+int* GetSuffix()
+{
+
+    Read(); //read file and calculte num of genes that it read
+    char Buffer[10000];
+    int *Suffix_Array = CreateSuffix(Buffer,10000); //fun return integer of array and the size to creat suffix then get suff arrY
+    //then return numbers of suffix in Suffix_Array
+    Output_ordring(Suffix_Array, 10000); //for printing suffix_array[i]
+
+
+    delete[] Buffer;//delete dynamic array
+    return Suffix_Array;
+}
+
+int* GetSuffix2()
+{
+
+    Read2(); //read file and calculte num of genes that it read
+    char Buffer2[200000];
+    int *Suffix_Array2 = CreateSuffix(Buffer2,100000); //fun return integer of array and the size to creat suffix then get suff arrY
+    //then return numbers of suffix in Suffix_Array
+    Output_ordring(Suffix_Array2, 100000); //for printing suffix_array[i]
+
+
+    delete[] Buffer2;//delete dynamic array
+    return Suffix_Array2;
+}
+
+void chose1()
+{//Suffix of first 10,000 char by using Naive then create 1st_task file in the DIR and print the suffix in it
+   // Read();
+//GetSuffix_Naive(); // execution time : 2.57 s
+
+cout<<"_____________________________"<<endl;
+    cout<<"Creating files start"<<endl;
+    cout<<"_____________________________"<<endl;
+     FILE * file_to_read = fopen("genome.txt", "r");
+    if(file_to_read == NULL)
+    {
+        cout<<endl<<"Nothing to read"<<endl;
+      //  return 0;
+    }
+    //int point;
+    FILE *file_to_write = fopen("1st_file.txt", "w");
+    if(file_to_write == NULL)
+    {
+        cout<<endl<<"Nothing to write"<<endl;
+        //return 0;
+    }
+
+  int*x=  GetSuffix_Naive(); //return suffix
+  for(int i=0;i<10000;i++)
+  {
+      fprintf(file_to_write,"%d",x[i]); //write 10,000 digits in file call  "First task"
+      fprintf(file_to_write,"\n");//to write each digit (gene) in separeted line
+
+  }
+  fclose(file_to_write);
+  fclose(file_to_read);
+
+}
+void chose2()
+{ //Suffix of first 10,000 char by using prefix then create 2nd_task file in the DIR and print the suffix in it
+   //Read();
+   // GetSuffix(); // execution time : 1.9 s
+    cout<<"_____________________________"<<endl;
+    cout<<"Creating files start"<<endl;
+    cout<<"_____________________________"<<endl;
+     FILE * file_to_read = fopen("genome.txt", "r");
+    if(file_to_read == NULL)
+    {
+        cout<<endl<<"Nothing to read"<<endl;
+       // return 0;
+    }
+    //int point;
+    FILE *file_to_write = fopen("2nd_task.txt", "w");
+    if(file_to_write == NULL)
+    {
+        cout<<endl<<"Nothing to write"<<endl;
+       // return 0;
+    }
+
+  int*y= GetSuffix(); //return suffix
+  for(int i=0;i<10000;i++)
+  {
+      fprintf(file_to_write,"%d",y[i]); //write 10,000 digits in file call  "First task"
+      fprintf(file_to_write,"\n");//to write each digit (gene) in separeted line
+
+  }
+  fclose(file_to_write);
+  fclose(file_to_read);
+
+}
+void chose3()
+{ //Suffix of first 100,000 char by using prefix then create 3rd_task file in the DIR and print the suffix in it
+      //Read2();
+   // GetSuffix2(); //   execution time : 23.79 s for 1000000 chars
+    cout<<"_____________________________"<<endl;
+
+    cout<<"Creating files start"<<endl;
+    cout<<"_____________________________"<<endl;
+     FILE * file_to_read = fopen("genome.txt", "r");
+    if(file_to_read == NULL)
+    {
+        cout<<endl<<"Nothing to read"<<endl;
+        //return 0;
+    }
+    //int point;
+    FILE *file_to_write = fopen("3rd_task.txt", "w");
+    if(file_to_write == NULL)
+    {
+        cout<<endl<<"Nothing to write"<<endl;
+       // return 0;
+    }
+
+  int*z=  GetSuffix2(); //return suffix
+  for(int i=0;i<100000;i++)
+  {
+      fprintf(file_to_write,"%d",z[i]); //write 10,000 digits in file call  "First task"
+      fprintf(file_to_write,"\n");//to write each digit (gene) in separeted line
+
+  }
+  fclose(file_to_write);
+  fclose(file_to_read);
+
+}
+
+void Test_cases()
+{
+   char x[] = "basantyahya";
+    int n1 = sizeof(x)-1;
+    int *suffix_Array1 =CreateSuffix_Naive(x,n1);
+    cout << "The result of 1st test suffix func is " << x << endl;
+    Output_ordring(suffix_Array1, n1);
+
+
+   char y[] = "abcdefghijklmn";
+    int n2 = sizeof(y)-1;
+    int *suffix_Array2 =CreateSuffix_Naive(y,n2);
+    cout << "The result of 2nd test suffix func is " << y << endl;
+    Output_ordring(suffix_Array2, n2);
+
+
+   char z[] = "bananabanana";
+    int n3 = sizeof(z)-1;
+    int *suffix_Array3 =CreateSuffix_Naive(z,n3);
+    cout << "The result of 3rd test suffix func is " << z << endl;
+    Output_ordring(suffix_Array3, n3);
+
+     char a[] = "announcement";
+    int n4 = sizeof(a)-1;
+    int *suffix_Array4 =CreateSuffix_Naive(a,n4);
+    cout << "The result of 4rd test suffix func is " << a << endl;
+    Output_ordring(suffix_Array4, n4);
+
+      char b[] = "ABCDEFGHIJKLMNO";
+    int n5 = sizeof(b)-1;
+    int *suffix_Array5 =CreateSuffix_Naive(b,n5);
+    cout << "The result of 4rd test suffix func is " << b << endl;
+    Output_ordring(suffix_Array5, n5);
+}
+
+// Driver program to test above functions
+int main()
+{
+
+
+
+
+
+     // Read();
+    int chose ,again;
+   do{
+        Menu();
+    cout<<"\nEnter your choice :\t";
+    cin>>chose;
+    cout<<endl;
+    switch(chose)
+    {
+    case 1:
+        chose1();
+        break;
+    case 2 :
+        chose2();
+        break;
+    case 3 :
+       chose3();
+       break;
+
+      case 4:
+        Test_cases();
+        break;
+
+    case 5:
+        EXIT_SUCCESS;
+        break;
+
+    default:
+        cout<<"wrong choice\n";
+    }
+    cout<<"\n----------------------\n";
+    cout<<"1.Continue\n";
+    cout<<"2.Exit\n";
+    cout<<"\n----------------------\n";
+    cout<<"\nEnter your choice :\t";
+    cin>>again;
+    cout<<"\n-------------------------------------------\n\n";
+    if(again==2)
+        EXIT_SUCCESS;
+   }
+    while (again==1);
+
+
+
+ // cout<<endl<<"finished"<<endl;
+
+	/*char txt[] = "basant";
+	int n =sizeof(txt)-1;
+
+	int *suffixArr = CreateSuffix(txt, n);
+	cout << "Following is suffix array for " << txt << endl;
+	Output_ordring(suffixArr, n);*/
+	return 0;
+}
